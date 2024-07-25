@@ -1,0 +1,4 @@
+vmName,vmPath,vmMemoryStartupBytes,vhdPath,vhdSize,vmSwitch,isoPath,vmGeneration
+0724vm1,“C:\Users\Public\Documents\Hyper-V\Virtual hard disks”,4000,C:\Users\Public\Documents\Hyper-V\Virtualharddisks\Disk\0724disk01.vhdx,3100,New Virtual Switch,,1
+0724vm2,“C:\Users\Public\Documents\Hyper-V\Virtual hard disks”,4000,C:\Users\Public\Documents\Hyper-V\Virtualharddisks\Disk\0724disk02.vhdx,3100,New Virtual Switch,,1
+0724vm3,“C:\Users\Public\Documents\Hyper-V\Virtual hard disks”,4000,C:\Users\Public\Documents\Hyper-V\Virtualharddisks\Disk\0724disk03.vhdx,3100,New Virtual Switch,,1
