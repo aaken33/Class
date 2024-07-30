@@ -1,0 +1,148 @@
+Automate the creation of VMs 
+PREREQUISITES 
+*Ensure that Host system has enough Memory/Ram to handle VM creation(s)* 
+*Ensure that there are no files with the same name of the VM and the VM hard disk that you are trying to create on the host system* 
+
+*Ensure that there is a line in the code that handles metric conversions (EX: MB - GB)* 
+
+*For multiple VM creation, ensure that a CSV file is created with the correct column and cell categories. 
+EX. 
+VMName,VMPath,SwitchName,VMGeneration,MemoryStartUpBytes,VHDSizeBytes VM1,C:\ VMs,Default Switch,2,32,0 
+VM2,C:\ VMs,Default Switch,2,32,0 
+VM3,C:\ VMs,Default Switch,2,32,0 
+VM4,C:\ VMs,Default Switch,2,32,0 
+VM5,C:\ VMs,Default Switch,2,32,0 
+VM Automation (w/o Operating Systems aka Shell) 
+# Define variables 
+$VMName = "MyVM" 
+$VMPath = "C:\VMs" 
+$SwitchName = "Default Switch" 
+$MemoryStartupBytes = 2GB 
+$VHDSizeBytes = 50GB 
+$ComputerName = "MyVMComputer" 
+# Create the VM folder if it doesn't exist 
+if (-Not (Test-Path -Path $VMPath)) { 
+New-Item -Path $VMPath -ItemType Directory -Force 
+} 
+# Create a new VM 
+New-VM -Name $VMName -Path $VMPath -SwitchName $SwitchName -MemoryStartupBytes $MemoryStartupBytes -NewVHDPath "$VMPath\$VMName\$VMName.vhdx" -NewVHDSizeBytes $VHDSizeBytes -Generation 1
+Write-Host "VM '$VMName' created successfully." 
+# Start the VM 
+Start-VM -Name $VMName 
+Write-Host "VM '$VMName' started successfully." 
+# Wait for VM to start 
+Write-Host "Waiting for the VM to start..." 
+while ((Get-VM -Name $VMName).State -ne 'Running') { 
+Start-Sleep -Seconds 5 
+} 
+Write-Host "VM is now running." 
+# Wait for VM to finish booting (optional) 
+# Start-Sleep -Seconds 60 # Adjust the wait time as necessary 
+Write-Host "VM setup complete." 
+VM Automation Script (w/ Windows 2016 Operating System) 
+# Define variables 
+$VMName = "MyVM" 
+$VMPath = "C:\VMs" 
+$SwitchName = "Default Switch" 
+$MemoryStartupBytes = 2GB 
+$VHDSizeBytes = 50GB 
+$ISOPath = "INSERT ISO PATH HERE" 
+$ComputerName = "MyVMComputer" 
+# Create a new VM 
+New-VM -Name $VMName -Path $VMPath -SwitchName $SwitchName -MemoryStartupBytes $MemoryStartupBytes -NewVHDPath "$VMPath\$VMName\$VMName.vhdx" -NewVHDSizeBytes $VHDSizeBytes -Generation 1 
+# Set the VM DVD drive to boot from the Windows ISO 
+Set-VMDvdDrive -VMName $VMName -Path $ISOPath 
+# Start the VM 
+Start-VM -Name $VMName
+# Wait for VM to start 
+Write-Host "Waiting for the VM to start..." 
+while ((Get-VM -Name $VMName).State -ne 'Running') { 
+Start-Sleep -Seconds 5 
+} 
+Write-Host "VM is now running." 
+# Wait for VM to finish booting (optional) 
+# Start-Sleep -Seconds 60 # Adjust the wait time as necessary 
+Write-Host "VM setup complete." 
+Multiple VM Automation (w/o Operating Systems aka Shell) 
+# Path to the CSV file 
+$csvPath = "C:\Users\isaia\Downloads\VM Creation - Sheet1.csv" 
+# Import the CSV file 
+$vms = Import-Csv -Path $csvPath 
+# Loop through each row in the CSV and create only the first 5 VMs 
+$vms | Select-Object -First 5 | ForEach-Object { 
+$vmName = $_.VMName 
+$memoryStartupMB = [int]$_.MemoryStartupBytes 
+$memoryStartupBytes = $memoryStartupMB * 1MB # Convert MB to Bytes $vmPath = $_.VMPath 
+$switchName = $_.SwitchName 
+# Create the VM 
+New-VM -Name $vmName -MemoryStartupBytes $memoryStartupBytes -Path $vmPath -SwitchName $switchName 
+Write-Host "Created VM: $vmName" 
+} 
+Write-Host "First 5 VMs created successfully."
+Multiple VM Automation (w/Operating Systems Shell) 
+# Path to the CSV file 
+$csvPath = "C:\Users\isaia\Downloads\VM Creation - Sheet1.csv" 
+# Path to the bootable ISO image 
+$isoPath = "INSERT ISO PATH HERE" 
+# Import the CSV file 
+$vms = Import-Csv -Path $csvPath 
+# Loop through each row in the CSV and create only the first 5 VMs 
+$vms | Select-Object -First 5 | ForEach-Object { 
+$vmName = $_.VMName 
+$memoryStartupMB = [int]$_.MemoryStartupBytes 
+$memoryStartupBytes = $memoryStartupMB * 1MB # Convert MB to Bytes $vmPath = $_.VMPath 
+$switchName = $_.SwitchName 
+# Create the VM 
+New-VM -Name $vmName -MemoryStartupBytes $memoryStartupBytes -Path $vmPath -SwitchName $switchName 
+# Create a VHD for the VM 
+$vhdPath = "$vmPath\$vmName.vhdx" 
+New-VHD -Path $vhdPath -SizeBytes 60GB -Dynamic 
+# Attach the VHD to the VM 
+Add-VMHardDiskDrive -VMName $vmName -Path $vhdPath 
+# Attach the ISO image 
+Add-VMDvdDrive -VMName $vmName -Path $isoPath 
+Write-Host "Created VM: $vmName with ISO: $isoPath" 
+} 
+Write-Host "First 5 VMs created successfully."
+Procedure for Creating VM(s) on Powershell (NO Operating System) 
+1. Open Powershell as an admin or a privileged user 
+2. Decide which script would be best for the scenario. EX: If you just need one VM, then you only need a script to create one VM 
+3. Copy the script into powershell 
+4. Run the script 
+5. Connect to the vm to test connection 
+Procedure for Creating VM(s) on Powershell (With Operating System) 
+1. Open Powershell as an admin or a privileged user 
+2. Decide which script would be best for the scenario EX: If you just need one VM, then you only need a script to create one VM; If you don't need an OS, then use the script labeled WITHOUT OS. 
+3. Confirm that ISO image is inserted into code. You can find this by going to your file folder where the ISO is located, right click, and copy the path. 
+4. Copy and paste the script from this document into powershell 
+5. Run the script 
+6. Connect to the VM to test connection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Define the new computer name
+$newComputerName = "New-Computer-Name"
+
+# Rename the computer
+Rename-Computer -NewName $newComputerName -Force -Restart
+
+# Optionally, you can also specify credentials if you are executing this on a remote computer
+# $credential = Get-Credential
+# Rename-Computer -NewName $newComputerName -Force -Restart -Credential $credential
+
+
